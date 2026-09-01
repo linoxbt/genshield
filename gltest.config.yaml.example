@@ -1,0 +1,9 @@
+networks:
+  studionet:
+    accounts:
+      - ${GENSHIELD_DEPLOYER_KEY}
+    from: ${GENSHIELD_DEPLOYER_KEY}
+environment: .env
+paths:
+  contracts: contracts
+  artifacts: artifacts

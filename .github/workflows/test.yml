@@ -1,0 +1,36 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-direct-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install genlayer-py genlayer-test genvm-linter pytest python-dotenv cloudpickle
+
+      - name: genvm-lint
+        run: genvm-lint check contracts/genshield.py --json
+
+      - name: direct-mode tests
+        run: pytest tests/direct -q
+
+      - name: forbidden cross-references
+        run: |
+          # Pattern is base64-encoded so this file itself never contains the
+          # literal project names it is checking for the absence of.
+          PATTERN=$(echo "cmVidXMgcGFsaW5vZGUgcHJvdmVuYW5jZSBzdXJldHkgcGVudW1icmEgcHJlY2VkZW50" | base64 -d | tr ' ' '|')
+          ! grep -rniE "$PATTERN" \
+            --exclude-dir=.venv --exclude-dir=.git --exclude-dir=artifacts \
+            --exclude-dir=node_modules .

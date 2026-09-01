@@ -1,0 +1,6 @@
+{
+  "name": "genshield-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Node helpers for deploying and exercising the GenShield contract via genlayer-js."
+}
