@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #16202e 0%, transparent 60%),
+    #0d1117;
+  color: #e6edf3;
+}
+
+/* Policy wording is legal text and should read like it. */
+.wording {
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  line-height: 1.75;
+}
+
+.hairline {
+  border-color: #242c38;
+}

@@ -17,3 +17,6 @@ artifacts/
 # secrets
 .env
 gltest.config.yaml
+
+# Local Netlify folder
+.netlify

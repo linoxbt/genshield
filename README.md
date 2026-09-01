@@ -3,8 +3,10 @@
 Insurance for DeFi protocols, underwritten on written policy wording and settled
 without an adjudicator.
 
-A GenLayer Intelligent Contract. Live on Studio Network at
-`0x6898260794B453dc671735F2e5388B54a118ab01`.
+A GenLayer Intelligent Contract, with a dApp front end.
+
+- **App**: https://genshield-728.netlify.app
+- **Contract**: `0x6898260794B453dc671735F2e5388B54a118ab01` on Studio Network
 
 ## Why this is not a parametric-trigger product
 
@@ -140,6 +142,36 @@ comparison rules.
 Live tests in `tests/integration/` need a raw key in a gitignored config and are not
 part of the default run. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for what
 direct mode can and cannot cover.
+
+## The app
+
+`frontend/` is a Next.js dApp talking straight to the deployed contract via
+`genlayer-js`, with wallet connection through Reown AppKit. There is no backend and no
+mock data: every figure on screen is a live contract read, and a failed read says so
+rather than showing invented state.
+
+```
+/                products, pool capital and utilisation
+/product/[id]    wording, the review verdict, LP deposit/withdraw, quote and buy
+/policy/[id]     cover details, file a claim
+/claim/[id]      evidence, frozen chain facts, adjudication rounds, advance and settle
+/claims          every claim and the round that decided it
+/underwrite      open a new product
+```
+
+Every claim action is exposed to anyone, because the contract genuinely has no
+resolver: attaching evidence, adjudicating, appealing and settling are all
+permissionless buttons rather than an admin panel.
+
+```bash
+cd frontend
+cp .env.example .env.local   # contract address + a Reown project id
+npm install
+npm run dev
+```
+
+Deployment is configured in `netlify.toml` at the repo root (`base = "frontend"`,
+publish `frontend/.next`, via `@netlify/plugin-nextjs`).
 
 ## Scripts
 
