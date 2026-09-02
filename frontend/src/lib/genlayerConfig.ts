@@ -16,7 +16,13 @@ export const RPC_URL =
   process.env.NEXT_PUBLIC_GENLAYER_RPC_URL_STUDIO || chains.studionet.rpcUrls.default.http[0];
 
 export const CHAIN = chains.studionet;
-export const EXPLORER_URL = chains.studionet.blockExplorers?.default.url ?? "";
+
+/**
+ * Not `chains.studionet.blockExplorers.default.url`. That value points at a
+ * host that currently returns 503; the Studio explorer actually serving this
+ * network is the one below (verified by request, not assumed).
+ */
+export const EXPLORER_URL = "https://explorer-studio.genlayer.com";
 
 export function isConfigured(): boolean {
   return Boolean(CONTRACT_ADDRESS);
