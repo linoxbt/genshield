@@ -4,21 +4,176 @@
 
 :root {
   color-scheme: dark;
+
+  /* The dark register the landing page is built on. `deep` sits below the
+     base ink so full-bleed sections can layer without going flat, and
+     `blue` is the only hue in the gradients — the same signal blue the
+     mark's agreement lens uses, heavily desaturated. */
+  --ink: #0d1117;
+  --ink-deep: #070b12;
+  --ink-soft: #161b22;
+  --ink-line: #242c38;
+  --ink-blue: #10233f;
 }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 50% -10%, #16202e 0%, transparent 60%),
-    #0d1117;
+  background: var(--ink);
   color: #e6edf3;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Policy wording is legal text and should read like it. */
-.wording {
+/* Policy wording is legal text and should read like it. The same serif
+   carries the landing page's editorial headings, because the whole product
+   is about written wording — the typography is the argument. */
+.wording,
+.font-doc {
   font-family: Georgia, Cambria, "Times New Roman", serif;
+}
+
+.wording {
   line-height: 1.75;
 }
 
-.hairline {
-  border-color: #242c38;
+.tabnum {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: #58a6ff;
+  color: #0d1117;
+}
+
+:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    /* Zeroing duration alone is not enough: the staggered reveals across
+       the landing page carry transition/animation *delays* of up to 500ms,
+       so content would still sit invisible for half a second before
+       appearing instantly. Under reduced motion it should simply be there. */
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.4s ease forwards;
+}
+
+/* A slow, restrained blur-to-focus reveal for editorial headings. */
+@keyframes clause-reveal {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+.animate-clause-reveal {
+  animation: clause-reveal 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* The splash mark gets two separate beats, not one shared opacity fade: a
+   deliberate entrance settling into place, then an exit where the mark
+   leaves first — scaling past 1 and blurring away — before the backdrop
+   dims behind it. */
+@keyframes splash-mark-in {
+  from {
+    opacity: 0;
+    filter: blur(24px);
+    transform: scale(0.55) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-splash-mark-in {
+  animation: splash-mark-in 1200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes splash-mark-out {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    filter: blur(16px);
+    transform: scale(1.25) rotate(4deg);
+  }
+}
+
+.animate-splash-mark-out {
+  animation: splash-mark-out 650ms cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+/* A very slow continuous turn — the footer's oversized background mark,
+   quietly alive rather than static. */
+@keyframes slow-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-slow-spin {
+  animation: slow-spin 90s linear infinite;
+}
+
+/* Continuous scroll-linked depth of field: the heading blurs progressively
+   as the viewport scrolls past it, rather than firing once. Native
+   scroll-driven animation, no library; useScrollDepth.ts only takes over
+   where `animation-timeline` isn't supported. Composes with the
+   reduced-motion override above since it still runs through
+   animation-duration. */
+@supports (animation-timeline: view()) {
+  .scroll-depth-blur {
+    animation: depth-blur linear both;
+    /* `exit`, not `cover`. A cover range starts the moment the element
+       enters from the bottom, so the heading was already blurred out by the
+       time the reader reached it. The depth of field belongs to the heading
+       leaving the viewport, not arriving in it. */
+    animation-timeline: view();
+    animation-range: exit 0% exit 100%;
+  }
+}
+
+@keyframes depth-blur {
+  from {
+    filter: blur(0);
+  }
+  to {
+    filter: blur(14px);
+  }
 }

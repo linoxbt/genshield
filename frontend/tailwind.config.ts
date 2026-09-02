@@ -5,7 +5,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: { DEFAULT: "#0d1117", soft: "#161b22", line: "#242c38" },
+        ink: {
+          DEFAULT: "#0d1117",
+          deep: "#070b12",
+          soft: "#161b22",
+          line: "#242c38",
+          blue: "#10233f",
+        },
         paper: "#f5f3ee",
         signal: { ok: "#3fb950", warn: "#d29922", bad: "#f85149", cool: "#58a6ff" },
       },
