@@ -189,3 +189,66 @@ Two rounds in that path fetch the open web from inside the contract
 (`attach_chain_evidence` hits an Ethereum RPC, `adjudicate` fetches an incident report),
 so whether validators can reach those hosts is genuinely unknown until it runs. Worth
 completing before claiming the full lifecycle anywhere public.
+
+---
+
+## Resubmission response (paste into the Portal)
+
+Both requests are addressed. The contract was redeployed, so **the address has changed
+to `0x7B9f0D4bB45d6d21b42D060bD276C594381Ce3e3`**.
+
+**1. Active coverage now stays reserved.**
+
+Confirmed and fixed. `settle()` released the reservation unconditionally and then
+returned a rejected claim's policy to ACTIVE, leaving a policy that could be claimed
+again for the full sum insured while `locked_atto` no longer accounted for it. That is
+not cosmetic: both solvency gates read `locked_atto`, so an LP could withdraw capital
+still standing behind live cover, and a product could write more cover than it could
+honour.
+
+Cover is now released only when the policy actually closes:
+
+- claim upheld — CLAIMED, released
+- claim rejected, policy already lapsed — EXPIRED, released
+- claim rejected, policy still live — ACTIVE, reservation kept
+
+`release_expired` frees it later, when the policy genuinely lapses.
+
+Worth flagging plainly: our own test had asserted the bug, requiring `locked_atto == 0`
+and `state == "ACTIVE"` at once. The corrected assertions were confirmed failing against
+the old contract before the fix landed, and a new test withdraws against the retained
+reservation and expects refusal. 111 direct-mode tests pass.
+
+**2. Frontend writes are finality-safe.**
+
+Two defects, plus a third found while fixing them:
+
+- `waitForTransactionReceipt` was called without a `status`, so it defaulted to ACCEPTED
+  and returned on any decided state. `DECIDED_STATES` includes UNDETERMINED, CANCELED,
+  LEADER_TIMEOUT and VALIDATORS_TIMEOUT, so a failed transaction was presented as a
+  completed action.
+- `_pay` emits every transfer with `on="finalized"`. At ACCEPTED no payout, refund or
+  withdrawal has actually moved, so reporting completion there was wrong about the
+  user's money.
+- The first execution check used `txExecutionResultName`, which is empty on Studio's raw
+  transaction — a no-op that would still pass a reverted-but-finalized transaction. The
+  signal that works is `consensus_data.leader_receipt[].execution_result`.
+
+Writes now poll to FINALIZED and fail explicitly on the terminal failure states, naming
+the state and the hash. The UI reports submitted, accepted and finalized as distinct
+phases and says while accepted that nothing has transferred yet. In-flight hashes are
+persisted before the wait begins, so a reload during the pre-finality window does not
+lose the only handle on a transaction. Value-moving actions reconcile after
+finalization: the payout shown is read back from the settled claim rather than inferred
+from the arguments submitted.
+
+**How-to:** steps 02 and 03 now point at product 1 ("Broad protocol cover", REJECTED)
+and product 2 ("Oracle failure cover", APPROVED, 2 GEN pool) on the new deployment. The
+rest of the path is unchanged and still requires no balance.
+
+**Commits:** `0880552` (both fixes), `d9e6d81` (redeploy and repoint).
+
+**Scope we are not claiming:** the claim path — file, attach chain evidence, adjudicate,
+settle — is implemented and covered by the direct-mode suite, including the reservation
+behaviour above, but has not yet been exercised end to end on-chain. It is deliberately
+kept out of the verification path until it has been.
