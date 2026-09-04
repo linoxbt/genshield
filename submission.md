@@ -64,12 +64,12 @@ Go to https://genshield-728.netlify.app and open Products from the menu (the but
 
 **Step 02** — *Read a wording that failed review*
 ```
-Open "Oracle failure cover" (product 1). It is marked REJECTED. Read the policy wording, then read the Underwriting review panel below it: validators refused this wording because "deviates materially" and "true market price" are not objectively defined, so no one could settle a claim from evidence alone.
+Open "Broad protocol cover" (product 1). It is marked REJECTED. Read the policy wording, then the Underwriting review panel below it: validators refused it because "any loss" names no particular failure event that could be objectively verified from the listed evidence sources.
 ```
 
 **Step 03** — *Read a wording that passed*
 ```
-Go back and open product 3. Same risk, but the threshold is quantified at 20 percent and the trigger is tied to what published reporting states. It is APPROVED, and its pool holds 2 GEN of capital.
+Go back and open "Oracle failure cover" (product 2). It insures a specific failure with a quantified 20 percent threshold, tied to what published reporting states. It is APPROVED, and its pool holds 2 GEN of capital.
 ```
 
 **Step 04** — *Connect a wallet*
@@ -79,7 +79,7 @@ Click Connect wallet and connect on GenLayer Studio Network (chain 61999). You d
 
 **Step 05** — *Write a wording that cannot be settled*
 ```
-Open Underwrite from the menu. Give the product any name, and for the wording enter something deliberately unsettleable, for example: "This policy compensates the insured for any loss they suffer on the covered protocol." Leave the evidence host as rekt.news and the RPC as the prefilled endpoint. Submit.
+Open Underwrite from the menu. Give the product any name, and for the wording enter something deliberately unsettleable, for example: "This policy pays out whenever the covered protocol behaves unfairly towards its users." Leave the evidence host as rekt.news and the RPC as the prefilled endpoint. Submit.
 ```
 
 **Step 06** — *Run the underwriting round*
@@ -104,13 +104,13 @@ Repeat steps 05 and 06 with a wording that names a specific failure and a quanti
 **Expected verification outcome** (500 max — this is 494)
 
 ```
-After step 06 the steward's own product flips from PENDING to REJECTED, with a one-sentence note written by the validators in that round explaining which part of the wording cannot be settled from evidence — wording that will differ from run to run, because it is generated, not canned. The product then cannot be quoted or sold. Step 08 produces the opposite result on quantified wording. Four products already exist on-chain from earlier runs: 1 and 2 REJECTED, 3 and 4 APPROVED and funded.
+After step 06 the steward's own product flips from PENDING to REJECTED, with a one-sentence note written by the validators in that round explaining which part of the wording cannot be settled from evidence — wording that will differ from run to run, because it is generated, not canned. The product then cannot be quoted or sold. Step 08 produces the opposite result on quantified wording. Two products already exist on-chain: product 1 REJECTED, product 2 APPROVED with a funded 2 GEN pool.
 ```
 
 **Contract link 1**
 
 ```
-https://explorer-studio.genlayer.com/address/0x6898260794B453dc671735F2e5388B54a118ab01
+https://explorer-studio.genlayer.com/address/0x7B9f0D4bB45d6d21b42D060bD276C594381Ce3e3
 ```
 
 ---
@@ -143,29 +143,30 @@ https://github.com/linoxbt/genshield
 
 ## What is actually on-chain right now
 
-Contract `0x6898260794B453dc671735F2e5388B54a118ab01` on Studio Network:
+Contract `0x7B9f0D4bB45d6d21b42D060bD276C594381Ce3e3` on Studio Network:
 
 | | |
 |---|---|
-| Products | 4 — two REJECTED at review, two APPROVED |
-| Pool capital | 4.03 GEN |
-| Cover in force | 1 GEN |
-| Premium earned | 0.03 GEN |
+| Products | 2 — one REJECTED at review, one APPROVED |
+| Pool capital | 2 GEN |
+| Cover in force | 0 GEN |
 | Claims | 0 |
 
-The two rejections were not staged. They were the first two wordings written for this
-contract, and the gate refused both:
+The rejection was not staged, and it is regenerated per run rather than stored. On
+this deployment the gate refused product 1 with:
 
-> "The trigger turns on whether an oracle price 'deviates materially' from the asset's
-> 'true market price,' but those key benchmarks are not objectively defined in the
-> wording, so a reader could not settle coverage from rekt.news and receipts alone
-> without subjective judgment."
+> "The term 'any loss' is overly broad and subjective, failing to specify a particular
+> failure event or technical trigger that can be objectively verified through the listed
+> evidence sources."
 
-> "The wording depends on proving the 'deliberate' intent of a trader, which is a
-> subjective fact that cannot be definitively observed through on-chain data or
-> reporting."
+and approved product 2 with:
 
-Both were approved after the threshold was quantified and the intent finding removed.
+> "It specifies an observable trigger on a specific system — the protocol's oracle price
+> being over 20% off the contemporaneous open-market price — and coverage can be checked
+> against rekt.news incident reporting plus the insured's transaction receipts."
+
+A steward running step 06 will get their own wording judged, in words this run has not
+seen before.
 
 ---
 

@@ -6,7 +6,7 @@ without an adjudicator.
 A GenLayer Intelligent Contract, with a dApp front end.
 
 - **App**: https://genshield-728.netlify.app
-- **Contract**: `0x6898260794B453dc671735F2e5388B54a118ab01` on Studio Network
+- **Contract**: `0x7B9f0D4bB45d6d21b42D060bD276C594381Ce3e3` on Studio Network
 
 ## Why this is not a parametric-trigger product
 
