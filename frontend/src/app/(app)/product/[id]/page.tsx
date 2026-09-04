@@ -109,7 +109,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             <TxButton
               label="Run underwriting review"
               pendingLabel="Validators reading the wording…"
-              action={(s) => reviewProduct(s, id)}
+              action={(s, onPhase) => reviewProduct(s, id, onPhase)}
               onDone={reload}
             />
           </div>
@@ -146,7 +146,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </label>
               <TxButton
                 label="Deposit"
-                action={(s) => deposit(s, id, toAtto(lpAmount))}
+                action={(s, onPhase) => deposit(s, id, toAtto(lpAmount), onPhase)}
                 onDone={reload}
                 variant="ghost"
               />
@@ -159,7 +159,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 </span>
                 <TxButton
                   label="Withdraw all"
-                  action={(s) => withdraw(s, id, BigInt(data.shares))}
+                  action={(s, onPhase) => withdraw(s, id, BigInt(data.shares), onPhase)}
+                  reconcile={async () => {
+                    // The withdrawal transfer executes at finalization, so the
+                    // remaining share balance is only trustworthy now.
+                    const left = address ? await sharesOf(id, address) : "0";
+                    return `Withdrawn. ${gen(left)} shares remaining.`;
+                  }}
                   onDone={reload}
                   variant="ghost"
                   hint="Blocked while capital backs live cover."
@@ -219,7 +225,17 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   <div className="mt-4">
                     <TxButton
                       label="Buy policy"
-                      action={(s) => buyPolicy(s, id, toAtto(cover), Number(days), BigInt(quote))}
+                      action={(s, onPhase) =>
+                        buyPolicy(s, id, toAtto(cover), Number(days), BigInt(quote), onPhase)
+                      }
+                      reconcile={async () => {
+                        // Any overpayment is refunded on finalization, so the
+                        // premium actually charged is read back, not assumed.
+                        const p = await getProduct(id);
+                        return p
+                          ? `Cover is live. Pool now holds ${gen(p.capitalAtto)} GEN with ${gen(p.lockedAtto)} GEN reserved.`
+                          : undefined;
+                      }}
                       onDone={reload}
                       hint="Any overpayment is refunded on finalisation."
                     />

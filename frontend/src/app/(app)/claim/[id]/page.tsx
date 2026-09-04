@@ -218,7 +218,7 @@ export default function ClaimPage({ params }: { params: Promise<{ id: string }> 
             <TxButton
               label="Attach chain evidence"
               pendingLabel="Querying the insured chain…"
-              action={(s) => attachChainEvidence(s, id)}
+              action={(s, onPhase) => attachChainEvidence(s, id, onPhase)}
               onDone={reload}
             />
           ) : null}
@@ -227,14 +227,29 @@ export default function ClaimPage({ params }: { params: Promise<{ id: string }> 
             <TxButton
               label={claim.state === "APPEALED" ? "Re-adjudicate" : "Adjudicate"}
               pendingLabel="Validators reading the evidence…"
-              action={(s) => adjudicate(s, id)}
+              action={(s, onPhase) => adjudicate(s, id, onPhase)}
               onDone={reload}
             />
           ) : null}
 
           {claim.state === "ADJUDICATED" ? (
             <>
-              <TxButton label="Settle" action={(s) => settle(s, id)} onDone={reload} />
+              <TxButton
+                label="Settle"
+                pendingLabel="Settling…"
+                action={(s, onPhase) => settle(s, id, onPhase)}
+                reconcile={async () => {
+                  // Read the payout back off the settled claim rather than
+                  // inferring it: the transfer runs at finalization, so this
+                  // is the first moment the figure is real.
+                  const c = await getClaim(id);
+                  if (!c) return undefined;
+                  return c.verdict === "COVERED"
+                    ? `Paid ${gen(c.payoutAtto)} GEN to the claimant.`
+                    : "Claim rejected. The filing bond went to the pool; no payout.";
+                }}
+                onDone={reload}
+              />
               <div>
                 <div className="flex flex-wrap items-end gap-3">
                   <label className="text-xs text-slate-500">
@@ -247,7 +262,7 @@ export default function ClaimPage({ params }: { params: Promise<{ id: string }> 
                   </label>
                   <TxButton
                     label="Appeal"
-                    action={(s) => appeal(s, id, toAtto(appealBond))}
+                    action={(s, onPhase) => appeal(s, id, toAtto(appealBond), onPhase)}
                     onDone={reload}
                     variant="ghost"
                     hint={

@@ -114,7 +114,7 @@ export default function PolicyPage({ params }: { params: Promise<{ id: string }>
           <div className="mt-4">
             <TxButton
               label="File claim"
-              action={(s) => fileClaim(s, id, urlList, hashList, toAtto(bond))}
+              action={(s, onPhase) => fileClaim(s, id, urlList, hashList, toAtto(bond), onPhase)}
               onDone={reload}
               disabled={!isHolder || urlList.length === 0}
               hint={!isHolder ? "Only the policyholder can claim." : undefined}
@@ -131,7 +131,7 @@ export default function PolicyPage({ params }: { params: Promise<{ id: string }>
             again. Permissionless.
           </p>
           <div className="mt-4">
-            <TxButton label="Release cover" action={(s) => releaseExpired(s, id)} onDone={reload} variant="ghost" />
+            <TxButton label="Release cover" action={(s, onPhase) => releaseExpired(s, id, onPhase)} onDone={reload} variant="ghost" />
           </div>
         </Card>
       ) : null}

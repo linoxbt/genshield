@@ -752,7 +752,24 @@ class GenShield(gl.Contract):
             payout = int(policy.coverage_atto) * int(claim.loss_bps) // BPS
             payout = min(payout, int(policy.coverage_atto), int(product.capital_atto))
 
-        self._release_cover(product, policy)
+        # Decide the policy's fate first, because whether the reservation is
+        # freed depends on it. Cover is released only when the policy actually
+        # closes. A rejected claim leaves the policy live and claimable again,
+        # so its cover must stay reserved - releasing it there would drop
+        # locked_atto while the holder can still claim the full sum insured,
+        # and both solvency gates read locked_atto: withdraw would let an LP
+        # take capital that still stands behind live cover, and buy_policy
+        # would write more cover than the pool can honour.
+        if covered:
+            next_policy_state = POLICY_CLAIMED
+        elif int(self._now()) >= int(policy.expires_at):
+            next_policy_state = POLICY_EXPIRED
+        else:
+            next_policy_state = POLICY_ACTIVE
+
+        if next_policy_state != POLICY_ACTIVE:
+            self._release_cover(product, policy)
+
         if payout > 0:
             product.capital_atto = u256(int(product.capital_atto) - payout)
 
@@ -781,9 +798,7 @@ class GenShield(gl.Contract):
         if fee > 0:
             self._pay(self.treasury, fee)
 
-        policy.state = POLICY_CLAIMED if covered else (
-            POLICY_EXPIRED if int(self._now()) >= int(policy.expires_at) else POLICY_ACTIVE
-        )
+        policy.state = next_policy_state
         self._save_policy(policy)
 
         claim.payout_atto = u256(payout)

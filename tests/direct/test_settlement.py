@@ -77,9 +77,35 @@ def test_rejected_claim_forfeits_the_bond_to_the_pool(
     assert result["protocol_fee_atto"] == "500"
     after = int(contract.get_product(pid)["capital_atto"])
     assert after == before + 9500
-    assert contract.get_product(pid)["locked_atto"] == "0"
-    # The cover is released but not spent, so the policy is live again.
+    # The policy is live again, so its cover must STAY reserved. Releasing it
+    # here would leave a claimable policy with nothing set aside behind it.
+    assert contract.get_product(pid)["locked_atto"] == str(10 * GEN)
     assert contract.get_policy(policy_id)["state"] == "ACTIVE"
+
+
+def test_rejected_claim_keeps_cover_reserved_against_withdrawal(
+    contract, direct_vm, direct_alice, direct_bob
+):
+    """
+    The invariant a released reservation would break. Both solvency gates read
+    locked_atto, so freeing it on a rejection would let an LP withdraw capital
+    that still stands behind a policy the holder can claim again tomorrow.
+    """
+    pid, policy_id, _ = build(contract, direct_vm, direct_alice, direct_bob)
+    direct_vm.sender = direct_alice
+    shares = int(contract.shares_of(pid, direct_alice))
+
+    claim_id = file_and_adjudicate(
+        contract, direct_vm, direct_bob, policy_id, covered=False, loss_bps=0
+    )
+    contract.settle(claim_id)
+
+    assert contract.get_policy(policy_id)["state"] == "ACTIVE"
+    assert contract.get_product(pid)["locked_atto"] == str(10 * GEN)
+
+    direct_vm.sender = direct_alice
+    with direct_vm.expect_revert("break solvency"):
+        contract.withdraw(pid, shares)
 
 
 def test_rejected_claim_evidence_cannot_be_refiled(

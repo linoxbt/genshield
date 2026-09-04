@@ -113,7 +113,7 @@ export default function UnderwritePage() {
         <div className="mt-6">
           <TxButton
             label="Create product"
-            action={(s) =>
+            action={(s, onPhase) =>
               createProduct(s, {
                 name: name.trim(),
                 wording: wording.trim(),
@@ -124,7 +124,7 @@ export default function UnderwritePage() {
                 maxCoverageAtto: toAtto(maxCover),
                 maxLeverageBps: Number(leverage),
                 utilSlopeBps: Number(slope),
-              })
+              }, onPhase)
             }
             onDone={() => router.push("/")}
             disabled={!ready}
